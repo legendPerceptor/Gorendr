@@ -262,7 +262,7 @@ func rndKernelParse(_kstr string) *rndKernel{
 	if ret, ok := rndKernelMap[kstr]; ok {
 		return ret
 	}
-	fmt.Println("The kernel [%s] does not exist", _kstr)
+	fmt.Printf("The kernel [%s] does not exist\n", _kstr)
 	return nil
 }
 

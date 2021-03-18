@@ -133,7 +133,7 @@ type rndVolume struct {
 						   "left-posterior-superior" world-space */
 	Dtype rndType       /* type of the voxel data */
 
-	Data *float64
+	Data *[]float64
 }
 
 /*
@@ -150,7 +150,7 @@ type rndImage struct {
 	   slower (size[1]) spatial axes */
 	Dtype rndType       /* type of the data */
 
-	Data *float64
+	Data *[]float64
 }
 
 /*
@@ -172,7 +172,7 @@ type rndConvo struct{
 				   many samples were outside (relative to previous
 				   projects (i.e. inside is the new !outside) */
 	Kern_values,
-	Deriv_values *float64 // for convolution computation
+	Deriv_values *[]float64 // for convolution computation
 }
 
 
@@ -180,7 +180,7 @@ type rndConvo struct{
 type _txf struct {
 	len uint			// length of rgba LUT
 	vmin, vmax float64	// domain of the LUT is the interval [vmin,vmax]
-	rgba *float64		// lookup table data, rgba on faster axis
+	rgba *[]float64		// lookup table data, rgba on faster axis
 	unitStep float64	/* the "unit" length to use when computing opacity
 					   correction as a function of ray step size
 					   S. Whatever formula you use for opacity
@@ -199,7 +199,7 @@ type _levoy struct {
 	num uint	/* number of surfaces; logical length of "vra"
 			   array.  0 means "no Levoy opacity functions in
 			   use" */
-	vra *float64 /* 2-D array of parameters; v,r,a on faster axis;
+	vra *[]float64 /* 2-D array of parameters; v,r,a on faster axis;
 			   logically a 1-D array of 3-vectors, where each
 			   element of the 3-vector is:
 			   v: isovalue, ("f_v" in Levoy paper),
@@ -210,15 +210,15 @@ type _levoy struct {
 type _light struct {
 	num uint	 /* number of lights, logical length of each of the
 				   arrays below */
-	rgb *float64 /* light ii has color (rgb + 3*ii)[0,1,2]. Colors
+	rgb [3]float64 /* light ii has color (rgb + 3*ii)[0,1,2]. Colors
 	   			are only in RGB space, not HSV */
-	dir *float64 /* light direction (i.e. the direction *towards* the
+	dir [3]float64 /* light direction (i.e. the direction *towards* the
 				   light); this is not necessarily a normalized
 				   vector, and it can be either in view-space or
 				   world-space */
-	vsp *int	 /* light ii is in view-space if vsp[ii] if is
+	vsp int	 /* light ii is in view-space if vsp[ii] if is
 	   				non-zero, else the light is in world-space */
-	xyz *float64 /* normalized light direction in world space; set by
+	xyz [3]float64 /* normalized light direction in world space; set by
 				   rndCtxLightUpdate() */
 }
 
@@ -273,7 +273,7 @@ type rndCtx struct {
 	   milliseconds) rndRay->time, and in an extra
 	   last channel of the output image */
 	// camera and image specification, set by rndCtxCameraSet()
-	Cam rndCamera
+	Cam *rndCamera
 	/* For rndProbeRgba and rndProbeRgbaLit: univariate RGBA transfer
 	   function, represented as a lookup table "rgba", and other variables
 	   related to opacity. Note: there are no rndTxf structs in here. Rather,
@@ -306,3 +306,75 @@ type rndCtx struct {
 	MT [9]float64
 
 }
+
+/*
+  struct rndTxf: stores a univariate transfer function ("txf"), represented as
+  "num" control points, all specified in output space "space", which may a
+  3-component color (rndSpaceRGB or rndSpaceHSV) or a scalar opacity
+  (rndSpaceAlpha).  The control points are in the "data" array, which is
+  logically:
+
+  * if rndSpaceAlpha != space: a 4-by-num (faster-by-slower) array of reals,
+    or a length-"num" array of (X,A,B,C) 4-vectors, where X is location of
+    control point, and (A,B,C) are color coordinates.
+
+  * if rndSpaceAlpha == space: a 2-by-num array of reals, or a length-"num"
+     array of (X,A) 2-vectors, where X is location of control point, and A is
+     opacity
+
+  In either case, the X values have to strictly increase with control point
+  index. In this way, the rndTxf is a lot like a mprCmap from Project 2.
+  However, the rndTxf has no notion of a special color for being "outside" the
+  volume, nor can a rndTxf contain a LUT (that's in rndCtx->txf.rgba).
+  Evaluating this transfer function, via rndTxfEval(), is done as a
+  pre-process, to generate the LUT that is eventually passed to rndCtxTxfSet()
+*/
+type rndTxf struct {
+	space rndSpace // what quantity is stored at each control point
+	num uint       // number of control points
+	data *[]float64  // control point data
+}
+
+
+/*
+  struct rndRay: all the state for a single ray being cast, including the
+  results of sampling and intermediate blending while the ray is being cast,
+  and the results of final blending when the ray is done. This also includes
+  a record of whether *any* samples were "inside" the volume (as per
+  rndConvo->inside)
+
+  Note that there is no rndRayNew() and rndRayNix(). Users should be able to
+  declare "rndRay ray" and then call rndRayStart(&ray, ...).  Thus,
+  rndRayStart must completely initialize/reset the rndRay struct.  If
+  rndRayStart does any dynamic allocation (though the reference
+  implementation does none), then rndRayFinish must clean it up.
+
+  Note that the largest possible value of rndProbeLen(ctx->probe) is 4.
+  Knowing that, storage for probes (and their blending) need not be
+  dynamically allocated according to the probe learned at run-time.
+*/
+type rndRay struct {
+	hi, vi uint /* (set by rndRayStart) which pixel are we rendering: fast
+	   			(horizontal) and slow (vertical) index */
+	result [4]float64 /*  (in rndRayFinish): set here the final result of
+						   blending all the probes along the ray; these values
+						   will be copied into the output image. The number of
+						   values you are responsible for setting here is
+						   rndProbeLen(ctx->probe), which may be 1, 2, 3, or 4
+						   (having result[] always be allocated for 4 values is
+						   just to avoid managing a dynamic allocation). */
+	sms0, 		/* (set by rndRayStart if ctx->timing) if doing per-ray
+				   timing (i.e. rndCtx->timing), the wall-time at start of
+				   this ray, as set by rndWallTime (stored as two long
+				   ints: seconds and *micro*seconds since Jan. 1, 1970) */
+	sms1 [2]int64  /* (set by rndRayFinish if ctx->timing) wall-time at end
+				   of this ray */
+	millisecs float64 /* (set by rndRayFinish if ctx->timing) time, in
+						 *milli*seconds, from sms0 to sms1 */
+
+	r_img, r_0, r_step, rgb, rgb_material [3]float64
+	k, set int
+	T, delta float64
+	p, mid_result, litresult, VdirView, Vdir [4]float64
+}
+
