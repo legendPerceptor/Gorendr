@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type floatArrFlags [3]float64
@@ -42,9 +43,9 @@ func goMain(goCmd *flag.FlagSet, args []string){
 	goCmd.StringVar(&litFileName, "lit", "lit.txt", "The light, not file just string")
 	var size floatArrFlags
 	goCmd.Var(&size, "sz","Camera size")
-	var outputDataFile, outputMetaDataFile string
-	goCmd.StringVar(&outputDataFile, "od", "out.npy", "output data")
-	goCmd.StringVar(&outputMetaDataFile, "om", "out-meta.npy", "output meta data")
+	var outputDataFile string
+	goCmd.StringVar(&outputDataFile, "od", "out.png", "output data")
+	//goCmd.StringVar(&outputMetaDataFile, "om", "out-meta.npy", "output meta data")
 	var ortho int
 	goCmd.IntVar(&ortho, "ortho", 0, "Whether using orthogonal")
 	var nt int
@@ -72,9 +73,12 @@ func goMain(goCmd *flag.FlagSet, args []string){
 		lit[i], _ = strconv.ParseFloat(value, 64)
 	}
 	ctx = rndCtxNew(vol, rndKernelParse(k), fr, at, up, dcn,dcf,size, nc, fc, fov, us, s,p, b,ortho, nt, lit, lutFilename)
-	UseCtx(ctx)
-}
-
-func UseCtx(ctx *rndCtx) {
-
+	fmt.Println("Start rendering!")
+	start := time.Now()
+	img := rndImageNew()
+	rndRender(img, ctx, -1, -1)
+	duration := time.Since(start)
+	fmt.Printf("The duration of rendering is %d\n", duration.Milliseconds())
+	img.Content = "Gorendr beta (partial implementation)"
+	rndImageSave(outputDataFile, img)
 }

@@ -68,6 +68,7 @@ func (cam *rndCamera) rndCameraUpdate() {
 	cam.Ncv = cam.Nc + cam.D
 	cam.Fcv = cam.Fc + cam.D
 	cam.Hght = 2* cam.D * math.Tan(cam.FOV/2 * math.Pi/180)
+	cam.Wdth = cam.Hght * float64(cam.Size[0]) / float64(cam.Size[1])
 }
 
 func (cam *rndCamera) rndCameraSet(fr,at,up [3]float64, nc,fc,FOV float64, size0, size1 uint, ortho int){

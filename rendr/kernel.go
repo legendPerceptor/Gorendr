@@ -229,7 +229,7 @@ var ctmr = rndKernel{
 	Desc: "Catmull-Rom spline (C1, reconstructs quadratic)",
 	Support: 4,
 	Eval: ctmrEval,
-	Apply: dctmrApply,
+	Apply: ctmrApply,
 	Deriv: &dCtmr,
 }
 
@@ -258,6 +258,7 @@ func InitKernels() {
 }
 
 func rndKernelParse(_kstr string) *rndKernel{
+	InitKernels()
 	kstr := strings.ToLower(_kstr)
 	if ret, ok := rndKernelMap[kstr]; ok {
 		return ret

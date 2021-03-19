@@ -46,7 +46,7 @@ func rndCtxNew(vol *rndVolume, kern *rndKernel,
 			rgb: [3]float64{lit[0], lit[1], lit[2]},
 			dir: [3]float64{lit[3], lit[4], lit[5]},
 			vsp: int(lit[6]),
-			xyz: nil,
+			xyz: [3]float64{},
 		},
 		Lparam:         _lparam{
 			ka:  0.2,
@@ -65,4 +65,17 @@ func rndCtxNew(vol *rndVolume, kern *rndKernel,
 	ctx.rndCtxLightUpdate()
 	ctx.WtoI, ctx.MT = rnd_m4_affine_inv(ctx.Vol.ItoW)
 	return &ctx
+}
+
+func rndProbeLen(probe rndProbe) uint {
+	l:=uint(0)
+	switch  probe {
+	case rndProbeRgba:
+		l=4
+	case rndProbeRgbaLit:
+		l=4
+	default:
+		l=1
+	}
+	return l
 }

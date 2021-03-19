@@ -34,7 +34,7 @@ func (v *rndVolume) loadVolume(datafile string, metadatafile string) {
 	if err!=nil {
 		fmt.Printf(err.Error())
 	}
-	v.Data = &raw
+	v.Data = raw
 	v.Dtype = rndTypefloat64
 	f, _ = os.Open(metadatafile)
 	r2, err2 := npyio.NewReader(f)
@@ -66,8 +66,9 @@ func (txf *_txf) loadLut(datafile string) {
 	err = r.Read(&raw)
 	if err!=nil {
 		fmt.Printf(err.Error())
+		os.Exit(1)
 	}
-	txf.rgba = &raw
+	txf.rgba = raw
 }
 
 func (ctx *rndCtx) rndCtxLightUpdate() {
@@ -84,3 +85,41 @@ func (ctx *rndCtx) rndCtxLightUpdate() {
 		tmp[0]/dist, tmp[1]/dist,tmp[2]/dist,
 	}
 }
+
+func rndImageNew() *rndImage {
+	return &rndImage{
+		Content: "",
+		Channel: 0,
+		Size:    [2]uint{},
+		Dtype:   0,
+		Data:    nil,
+	}
+}
+
+
+func rndNewRay() *rndRay {
+	return &rndRay{
+		hi:           0,
+		vi:           0,
+		result:       [4]float64{},
+		sms0:         [2]int64{},
+		sms1:         [2]int64{},
+		millisecs:    0,
+		r_img:        [3]float64{},
+		r0:          [3]float64{},
+		r_step:       [3]float64{},
+		rgb:          [3]float64{},
+		rgb_material: [3]float64{},
+		k:            0,
+		set:          0,
+		T:            0,
+		delta:        0,
+		p:            [4]float64{},
+		mid_result:   [4]float64{},
+		litresult:    [4]float64{},
+		VdirView:     [4]float64{},
+		Vdir:         [4]float64{},
+	}
+}
+
+

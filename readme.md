@@ -25,10 +25,16 @@ We chose Golang to implement the render mainly because of two things:
 3. Handle the kernel evaluation, just `ctmr` for now.
 4. Implement the rendr algorithms
 
-Our version of rendering
+## Results
+
+Our version of rendering: we modified the parameters a bit for simplicity. First of all, use Python's pynrrd package to parse the `NRRD` files and save the data into `npy` format. We found a package `npyio` that is written in Go. Moreover, we simplified the lights to be only one light, and only support the `rgbalit` and `rgba` mode. For now the we only wrote `ctmr` kernel, but adding more kernels is just a matter of time. The testing command is shown below.
 ```bash
 ./rendr go -fr 6 12 5 -at 0 0 0 -up 0 0 1\
     -nc -2.3 -fc 2.3 -fov 20\
-    -sz 320 280 -id cube.npy -im cube-meta.npy $PARMS -nt 4 \
-    -lutd cube-luta.npy -od cube-lut.npy -om cube-lut-meta.npy
+    -sz 320 280 -id cube.npy -im cube-meta.npy \
+    -fov 14 -us 0.03 -s 0.01 -k ctmr -p rgbalit -b over \
+    -lit "1 1 1 -1 1 2 1" -dcn 1.1 1.1 1.1 -dcf 0.4 0.4 0.4\
+    -nt 4 -lutd cube-luta.npy -od cube-lut.png
 ```
+We render the image directly in Go using the `image` library instead of bothering the `NRRD` format. We didn't set the background to black but instead, we left it transparent. Following the tradition of representing transparency in Photoshop, the output image is shown here:
+![output](public/images/cube-output.png)

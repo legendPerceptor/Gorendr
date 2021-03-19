@@ -133,7 +133,7 @@ type rndVolume struct {
 						   "left-posterior-superior" world-space */
 	Dtype rndType       /* type of the voxel data */
 
-	Data *[]float64
+	Data []float64
 }
 
 /*
@@ -150,7 +150,7 @@ type rndImage struct {
 	   slower (size[1]) spatial axes */
 	Dtype rndType       /* type of the data */
 
-	Data *[]float64
+	Data []float64
 }
 
 /*
@@ -172,7 +172,7 @@ type rndConvo struct{
 				   many samples were outside (relative to previous
 				   projects (i.e. inside is the new !outside) */
 	Kern_values,
-	Deriv_values *[]float64 // for convolution computation
+	Deriv_values []float64 // for convolution computation
 }
 
 
@@ -180,7 +180,7 @@ type rndConvo struct{
 type _txf struct {
 	len uint			// length of rgba LUT
 	vmin, vmax float64	// domain of the LUT is the interval [vmin,vmax]
-	rgba *[]float64		// lookup table data, rgba on faster axis
+	rgba []float64		// lookup table data, rgba on faster axis
 	unitStep float64	/* the "unit" length to use when computing opacity
 					   correction as a function of ray step size
 					   S. Whatever formula you use for opacity
@@ -372,7 +372,7 @@ type rndRay struct {
 	millisecs float64 /* (set by rndRayFinish if ctx->timing) time, in
 						 *milli*seconds, from sms0 to sms1 */
 
-	r_img, r_0, r_step, rgb, rgb_material [3]float64
+	r_img, r0, r_step, rgb, rgb_material [3]float64
 	k, set int
 	T, delta float64
 	p, mid_result, litresult, VdirView, Vdir [4]float64

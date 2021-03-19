@@ -1,1 +1,1 @@
-go -fr "6 12 5" -at "0 0 0" -up "0 0 1" -nc -2.3 -fc 2.3 -fov 20 -sz "320 280" -id cube.npy -im cube-meta.npy -fov 14 -us 0.03 -s 0.01 -k ctmr -p rgbalit -b over -lit "1 1 1 -1 1 2 1" -dcn "1.1 1.1 1.1" -dcf "0.4 0.4 0.4" -nt 4 -lutd cube-luta.npy -od cube-lut.npy -om cube-lut-meta.npy
+go -fr "6 12 5" -at "0 0 0" -up "0 0 1" -nc -2.3 -fc 2.3 -fov 20 -sz "320 280" -id cube.npy -im cube-meta.npy -fov 14 -us 0.03 -s 0.01 -k ctmr -p rgbalit -b over -lit "1 1 1 -1 1 2 1" -dcn "1.1 1.1 1.1" -dcf "0.4 0.4 0.4" -lutd cube-luta.npy -od cube-lut.png
