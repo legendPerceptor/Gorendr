@@ -1,4 +1,7 @@
 package rendr
+
+import "sync"
+
 /* The rndKernel stores everything about a reconstruction kernel. The kernel
    is non-zero only within [-support/2,support/2], for integer "support"
    which may be odd or even (but always positive). The kernels are set up at
@@ -304,7 +307,8 @@ type rndCtx struct {
 	// student definition
 	WtoI [16]float64
 	MT [9]float64
-
+	rWlock sync.Mutex
+	nextTask uint
 }
 
 /*

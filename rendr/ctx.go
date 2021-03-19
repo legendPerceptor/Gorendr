@@ -1,5 +1,7 @@
 package rendr
 
+import "sync"
+
 var blendmap = map[string] rndBlend {
 	"over": rndBlendOver,
 	"max": rndBlendMax,
@@ -58,6 +60,8 @@ func rndCtxNew(vol *rndVolume, kern *rndKernel,
 		},
 		WtoI:           [16]float64{},
 		MT:             [9]float64{},
+		rWlock: sync.Mutex{},
+		nextTask: 0,
 	}
 	ctx.Cam.rndCameraSet(fr, at, up, nc, fc, fov, uint(size[0]), uint(size[1]), orth)
 	ctx.Cam.rndCameraUpdate()
